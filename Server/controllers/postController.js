@@ -62,8 +62,36 @@ const deletePost = async (req, res) => {
     return res.status(200).json({ message: "Post deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
-    console.log("Error in getPost:", error.message);
+    console.log("Error in deletePost:", error.message);
   }
 };
 
-export { createPost, getPost, deletePost };
+//Like Unlike Post
+const likeUnlikePost = async (req, res) => {
+  try {
+    const { id:postId } = req.params;
+    const userId = req.user._id;
+
+    const post = await Post.findById( postId );
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const userLikedPost = post.likes.includes(userId);
+    if (userLikedPost) {
+      //Unlike Post
+      await Post.updateOne({ _id: postId }, { $pull: { likes: userId } });
+      return res.status(200).json({ message: "Post unliked successfully" });
+    } else {
+      //Like Post
+      post.likes.push(userId);
+      await post.save();
+      return res.status(200).json({ message: "Post liked successfully" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+    console.log("Error in likeUnlikePost:", error.message);
+  }
+};
+
+export { createPost, getPost, deletePost, likeUnlikePost };
