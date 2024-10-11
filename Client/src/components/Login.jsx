@@ -33,7 +33,11 @@ import {
             rounded={'lg'}
             bg={useColorModeValue('white', 'gray.dark')}
             boxShadow={'lg'}
-            p={8}>
+            p={8}
+            w={{
+                base: "full",
+                sm: "400px",
+            }}>
             <Stack spacing={4}>
               <FormControl isRequired>
                 <FormLabel>Username</FormLabel>
