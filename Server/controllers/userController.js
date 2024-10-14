@@ -49,8 +49,8 @@ const signupUser = async (req, res) => {
      return res.status(400).json({ error: "Invalid user data" });
     }
   } catch (error) {
-    return res.status(500).json({ error: error.message });
     console.log("Error in signupUser:", error.message);
+    return res.status(500).json({ error: error.message });
   }
 };
 
