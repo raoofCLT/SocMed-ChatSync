@@ -88,7 +88,7 @@ const loginUser = async (req, res) => {
 const logoutUser = async (req, res) => {
   try {
     res.cookie("jwt", "", { maxAge: 1 });
-    res.status(200).json({ error: "User logged out successfully" });
+    res.status(200).json({ message: "User logged out successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
     console.log("Error in logoutUser:", error.message);
@@ -114,14 +114,14 @@ const followUnFollowUser = async (req, res) => {
       await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
       await User.findByIdAndUpdate(id, { $pull: { followers: req.user._id } });
 
-      res.status(200).json({ error: "User unfollowed successfully" });
+      res.status(200).json({ message: "User unfollowed successfully" });
     } else {
       //Follow User
       //Modify currentUser followers, modify following of userToModify
       await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
       await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
 
-      res.status(200).json({ error: "User followed successfully" });
+      res.status(200).json({ message: "User followed successfully" });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -156,7 +156,7 @@ const updateUser = async (req, res) => {
 
     user = await user.save();
 
-    res.status(200).json({ error: "Profile updated successfully", user });
+    res.status(200).json({ message: "Profile updated successfully", user });
   } catch (error) {
     res.status(500).json({ error: error.message });
     console.log("Error in updateUser:", error.message);
