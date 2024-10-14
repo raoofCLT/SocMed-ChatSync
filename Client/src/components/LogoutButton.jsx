@@ -21,7 +21,7 @@ const LogoutButton = () => {
             
 			const data = await res.json();
             console.log(`Your data is :`,data)
-            
+
 			if (data.error) {
 				showToast("Error", data.error, "error");
 				return;
@@ -32,6 +32,7 @@ const LogoutButton = () => {
 			setUser(null);
 		} catch (error) {
 			showToast("Error", error, "error");
+            console.log("Error in handleLogout:", error.message)
 		}
 	};
 	return (

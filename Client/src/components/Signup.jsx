@@ -50,6 +50,7 @@ export default function Signup() {
       localStorage.setItem("user-threads", JSON.stringify(data));
       setUser(data);
     } catch (error) {
+      showToast("Error", error, "error");
       console.log("Error in handleSignup:", error);
     }
   };
@@ -78,6 +79,7 @@ export default function Signup() {
                     onChange={(e) =>
                       setInputs({ ...inputs, name: e.target.value })
                     }
+                    value={inputs.name}
                   />
                 </FormControl>
               </Box>
@@ -89,6 +91,7 @@ export default function Signup() {
                     onChange={(e) =>
                       setInputs({ ...inputs, username: e.target.value })
                     }
+                    value={inputs.username}
                   />
                 </FormControl>
               </Box>
@@ -100,6 +103,7 @@ export default function Signup() {
                 onChange={(e) =>
                   setInputs({ ...inputs, email: e.target.value })
                 }
+                value={inputs.email}
               />
             </FormControl>
             <FormControl isRequired>
@@ -110,6 +114,7 @@ export default function Signup() {
                   onChange={(e) =>
                     setInputs({ ...inputs, password: e.target.value })
                   }
+                  value={inputs.password}
                 />
                 <InputRightElement h={"full"}>
                   <Button
