@@ -26,11 +26,14 @@ export default function UpdateProfilePage() {
     password: "",
   });
   const fileRef = useRef(null);
+  const [updating, setUpdating] = useState(false);
   const showToast = useShowToast();
 
   const { handleImageChange, imgUrl } = usePreviewImg();
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (updating) return;
+    setUpdating(true);
     console.log(user);
     try {
       const res = await fetch(`/api/users/update/${user._id}`, {
@@ -48,16 +51,11 @@ export default function UpdateProfilePage() {
       showToast("Success", "Profile updated successfully", "success");
 
       setUser(data);
-    //   setInputs({
-    //     name: data.name,
-    //     username: data.username,
-    //     email: data.email,
-    //     bio: data.bio,
-    //     password: "",  // You may want to reset the password field
-    //   });
       localStorage.setItem("user-threads", JSON.stringify(data));
     } catch (error) {
       showToast("Error", error, "error");
+    } finally {
+      setUpdating(false);
     }
   };
   return (
@@ -166,6 +164,7 @@ export default function UpdateProfilePage() {
                 bg: "green.500",
               }}
               type="submit"
+              isLoading={updating}
             >
               Submit
             </Button>
