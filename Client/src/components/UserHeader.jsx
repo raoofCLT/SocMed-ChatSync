@@ -1,6 +1,7 @@
 import {
   Avatar,
   Box,
+  Button,
   Flex,
   Link,
   Menu,
@@ -16,10 +17,11 @@ import { FaInstagram } from "react-icons/fa";
 import { CgMoreO } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
+import {Link as RouterLink} from "react-router-dom"
 
 const UserHeader = ({ user }) => {
   const toast = useToast();
-  const currentUser = useRecoilValue(userAtom)
+  const currentUser = useRecoilValue(userAtom) //logged in user
 
   const copyURL = () => {
     const currentURL = window.location.href;
@@ -82,6 +84,12 @@ const UserHeader = ({ user }) => {
       </Flex>
 
       <Text>{user.bio}</Text>
+
+      {currentUser._id === user._id && (
+        <Link as = {RouterLink} to="/update">
+        <Button size={"sm"}>Update Profile</Button>
+        </Link>
+  )}
       <Flex w={"full"} justifyContent={"space-between"}>
         <Flex gap={2} alignItems={"center"}>
           <Text color={"gray.light"}>{user.followers.length} followers</Text>
