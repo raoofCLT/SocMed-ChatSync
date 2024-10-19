@@ -23,7 +23,8 @@ import userAtom from "../atoms/userAtom";
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const setAuthScreen = useSetRecoilState(authScreenAtom);
-  const setUser = useSetRecoilState(userAtom)
+  const setUser = useSetRecoilState(userAtom);
+  const [loading, setLoading] = useState(false);
   const [inputs, setInputs] = useState({
     username: "",
     password: "",
@@ -31,6 +32,7 @@ export default function Login() {
   const showToast = useShowToast();
 
   const handleLogin = async () => {
+    setLoading(true);
     try {
       const res = await fetch("/api/users/login", {
         method: "POST",
@@ -44,12 +46,13 @@ export default function Login() {
         showToast("Error", data.error, "error");
         return;
       }
-      console.log(data);
-      localStorage.setItem("user-threads", JSON.stringify(data))
-      setUser(data)
+      localStorage.setItem("user-threads", JSON.stringify(data));
+      setUser(data);
     } catch (error) {
       showToast("Error", error.data, "error");
       console.log("Error in handleLogin: ", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -114,6 +117,7 @@ export default function Login() {
                   bg: useColorModeValue("gray.700", "gray.800"),
                 }}
                 onClick={handleLogin}
+                isLoading={loading}
               >
                 Login
               </Button>

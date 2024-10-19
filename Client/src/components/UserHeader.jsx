@@ -1,4 +1,5 @@
 import {
+  useColorModeValue,
   Avatar,
   Box,
   Button,
@@ -17,16 +18,19 @@ import { FaInstagram } from "react-icons/fa";
 import { CgMoreO } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
-import {Link as RouterLink} from "react-router-dom"
+import { Link as RouterLink } from "react-router-dom";
 import { useState } from "react";
 import useShowToast from "../hooks/useShowToast";
 
 const UserHeader = ({ user }) => {
   const toast = useToast();
-  const currentUser = useRecoilValue(userAtom) //logged in user
-  const [following, setFollowing] = useState(user.followers.includes(currentUser._id))
+  const currentUser = useRecoilValue(userAtom); //logged in user
+  const [following, setFollowing] = useState(
+    user.followers.includes(currentUser._id)
+  );
   const showToast = useShowToast();
-  const [updating,setUpdating] = useState(false)
+  const [updating, setUpdating] = useState(false);
+  const buttonBgColor = useColorModeValue("gray.300", "gray.dark");
 
   const copyURL = () => {
     const currentURL = window.location.href;
@@ -45,43 +49,42 @@ const UserHeader = ({ user }) => {
       });
   };
 
-  const handleFollow = async() => {
-    if(!currentUser){
-      showToast("Error","Please login to follow","error")
+  const handleFollow = async () => {
+    if (!currentUser) {
+      showToast("Error", "Please login to follow", "error");
       return;
     }
-    if(updating) return
-    setUpdating(true)
-    try{
-      const res = await fetch(`/api/users/follow/${user._id}`,{
-        method:"POST",
+    if (updating) return;
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/users/follow/${user._id}`, {
+        method: "POST",
         headers: {
-          "Content-Type":"application/json",
-        }
-      })
-      const data = await res.json()
-      if(data.error) {
-        showToast("Error",data.error,"error")
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      if (data.error) {
+        showToast("Error", data.error, "error");
         return;
       }
 
-      if(following){
-        showToast("Success",`Unfollowed ${user.name}`, "success")
-        user.followers.pop()
-      }else{
-        showToast("Success",`Followed ${user.name}`, "success")
-        user.followers.push(currentUser._id)
+      if (following) {
+        showToast("Success", `Unfollowed ${user.name}`, "success");
+        user.followers.pop();
+      } else {
+        showToast("Success", `Followed ${user.name}`, "success");
+        user.followers.push(currentUser._id);
       }
 
-      setFollowing(!following)
-
-    }catch (error){
+      setFollowing(!following);
+    } catch (error) {
       console.log(error);
       showToast("Error", error, "error");
-    }finally{
-      setUpdating(false)
+    } finally {
+      setUpdating(false);
     }
-  }
+  };
 
   return (
     <VStack gap={4} alignItems={"start"}>
@@ -130,13 +133,17 @@ const UserHeader = ({ user }) => {
       <Text>{user.bio}</Text>
 
       {currentUser._id === user._id && (
-        <Link as = {RouterLink} to="/update">
-        <Button size={"sm"}>Update Profile</Button>
+        <Link as={RouterLink} to="/update">
+          <Button size={"sm"} bg={buttonBgColor}>
+            Update Profile
+          </Button>
         </Link>
-  )}
+      )}
       {currentUser._id !== user._id && (
-        <Button size={"sm"} onClick={handleFollow} isLoading={updating}>{following ? "Unfollow" : "Follow"}</Button>
-  )}
+        <Button size={"sm"} onClick={handleFollow} isLoading={updating}>
+          {following ? "Unfollow" : "Follow"}
+        </Button>
+      )}
       <Flex w={"full"} justifyContent={"space-between"}>
         <Flex gap={2} alignItems={"center"}>
           <Text color={"gray.light"}>{user.followers.length} followers</Text>
