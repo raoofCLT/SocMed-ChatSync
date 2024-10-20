@@ -4,31 +4,35 @@ import {
   Flex,
   Image,
   Text,
-//   Menu,
-//   MenuButton,
-//   MenuList,
-//   MenuItem,
-//   useToast,
-//   Divider,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  useToast,
+  Divider,
 } from "@chakra-ui/react";
+import { DeleteIcon } from "@chakra-ui/icons";
 import { Link, useNavigate } from "react-router-dom";
-// import { BsThreeDots } from "react-icons/bs";
-// import { MdSaveAlt } from "react-icons/md";
+import { BsThreeDots } from "react-icons/bs";
+import { MdSaveAlt } from "react-icons/md";
 // import { FaRegEyeSlash } from "react-icons/fa";
 // import { LiaUserSlashSolid } from "react-icons/lia";
 // import { TbMessageReport } from "react-icons/tb";
-// import { AiOutlineLink } from "react-icons/ai";
+import { AiOutlineLink } from "react-icons/ai";
 // import { VscMute } from "react-icons/vsc";
 import Actions from "./Actions";
 import { useEffect, useState } from "react";
 import useShowToast from "../hooks/useShowToast";
-import {formatDistanceToNow} from "date-fns"
+import { formatDistanceToNow } from "date-fns";
+import { useRecoilValue } from "recoil";
+import userAtom from "../atoms/userAtom";
 
 const Post = ({ post, postedBy }) => {
   const [user, setUser] = useState(null);
-//   const toast = useToast();
+  const toast = useToast();
   const showToast = useShowToast();
   const navigate = useNavigate();
+  const currentUser = useRecoilValue(userAtom);
 
   useEffect(() => {
     const getUser = async () => {
@@ -50,31 +54,54 @@ const Post = ({ post, postedBy }) => {
 
   if (!user) return null;
 
-//   const copyURL = () => {
-//     const currentURL = window.location.href;
-//     navigator.clipboard
-//       .writeText(currentURL)
-//       .then(() => {
-//         toast({
-//           status: "success",
-//           description: "Post link copied.",
-//           duration: 3000,
-//           isClosable: true,
-//         });
-//       })
-//       .catch((err) => {
-//         console.error(err);
-//       });
-//   };
+  const copyURL = () => {
+    const currentURL = window.location.href;
+    navigator.clipboard
+      .writeText(currentURL)
+      .then(() => {
+        toast({
+          status: "success",
+          description: "Post link copied.",
+          duration: 3000,
+          isClosable: true,
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
 
-//   const handleSave = () => {
-//     const link = document.createElement("a");
-//     link.href = post.img;
-//     link.download = post.text || "download";
-//     document.body.appendChild(link);
-//     link.click();
-//     document.body.removeChild(link);
-//   };
+  const handleSave = () => {
+    const link = document.createElement("a");
+    link.href = post.img;
+    link.download = post.text || "download";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDelete = async (e) => {
+    try{
+      e.preventDefault
+      if(!window.confirm("Are you sure you want to delete this post")) return
+
+      const res = await fetch(`/api/posts/${post._id}`,{
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      const data = await res.json()
+      if(data.error){
+        showToast("Error", data.error, "error");
+        return
+      }
+      showToast("Success", "Post deleted", "success");
+    }catch (error){
+      showToast("Error", error, "error");
+    }
+  }
+
   return (
     <Link to={`/${user.username}/post/${post._id}`}>
       <Flex gap={3} mb={4} py={5}>
@@ -147,10 +174,16 @@ const Post = ({ post, postedBy }) => {
               alignItems={"center"}
               onClick={(e) => e.preventDefault()}
             >
-              <Text fontSize={"xs"} width={60} textAlign={"right"} color={"gray.light"}>
+              <Text
+                fontSize={"xs"}
+                width={60}
+                textAlign={"right"}
+                color={"gray.light"}
+              >
                 {formatDistanceToNow(new Date(post.createdAt))} ago
               </Text>
-              {/* <Menu>
+
+              <Menu>
                 <MenuButton ml={3}>
                   <BsThreeDots size={24} color={"gray"} cursor={"pointer"} />
                 </MenuButton>
@@ -165,45 +198,20 @@ const Post = ({ post, postedBy }) => {
                     <MdSaveAlt size={20} style={{ marginRight: "8px" }} />
                   </MenuItem>
                   <Divider />
-                  <MenuItem
-                    bg={"gray.dark"}
-                    justifyContent={"space-between"}
-                    display="flex"
-                  >
-                    <Text>Not interested</Text>
-                    <FaRegEyeSlash size={20} style={{ marginRight: "8px" }} />
-                  </MenuItem>
-                  <Divider />
-                  <MenuItem
-                    bg={"gray.dark"}
-                    justifyContent={"space-between"}
-                    display="flex"
-                  >
-                    <Text>Mute</Text>
-                    <VscMute size={20} style={{ marginRight: "8px" }} />
-                  </MenuItem>
-                  <Divider />
-                  <MenuItem
-                    bg={"gray.dark"}
-                    justifyContent={"space-between"}
-                    display="flex"
-                  >
-                    <Text>Unfollow</Text>
-                    <LiaUserSlashSolid
-                      size={20}
-                      style={{ marginRight: "8px" }}
-                    />
-                  </MenuItem>
-                  <Divider />
-                  <MenuItem
-                    bg={"gray.dark"}
-                    justifyContent={"space-between"}
-                    display="flex"
-                  >
-                    <Text>Report </Text>
-                    <TbMessageReport size={20} style={{ marginRight: "8px" }} />
-                  </MenuItem>
-                  <Divider />
+                  {currentUser?._id === user._id && (
+                    <>
+                      <MenuItem
+                        bg={"gray.dark"}
+                        justifyContent={"space-between"}
+                        display="flex"
+                        onClick={handleDelete}
+                      >
+                        <Text>Delete</Text>
+                        <DeleteIcon size={20} style={{ marginRight: "8px" }} />
+                      </MenuItem>
+                      <Divider />
+                    </>
+                  )}
                   <MenuItem
                     bg={"gray.dark"}
                     justifyContent={"space-between"}
@@ -214,7 +222,7 @@ const Post = ({ post, postedBy }) => {
                     <AiOutlineLink size={20} style={{ marginRight: "8px" }} />
                   </MenuItem>
                 </MenuList>
-              </Menu> */}
+              </Menu>
             </Flex>
           </Flex>
           <Text fontSize={"sm"}>{post.text}</Text>
