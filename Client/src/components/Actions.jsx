@@ -23,6 +23,8 @@ const Actions = ({ post: post_ }) => {
   const user = useRecoilValue(userAtom);
   const [liked, setLiked] = useState(post_.likes.includes(user?._id));
   const [post, setPost] = useState(post_);
+  // const [liked, setLiked] = useState(post_?.likes?.includes(user?._id) || false);
+  // const [post, setPost] = useState(post_ || { likes: [], replies: [] });
   const [isLiking, setIsLiking] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [reply, setReply] = useState("");
