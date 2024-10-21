@@ -20,14 +20,16 @@ import Actions from "./Actions";
 import { useEffect, useState } from "react";
 import useShowToast from "../hooks/useShowToast";
 import { formatDistanceToNow } from "date-fns";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
+import postAtom from "../atoms/postAtom";
 
 const Post = ({ post, postedBy }) => {
   const [user, setUser] = useState(null);
   const toast = useToast();
   const showToast = useShowToast();
   const navigate = useNavigate();
+  const [posts, setPosts] = useRecoilState(postAtom);
   const currentUser = useRecoilValue(userAtom);
 
   useEffect(() => {
@@ -41,7 +43,7 @@ const Post = ({ post, postedBy }) => {
         }
         setUser(data);
       } catch (error) {
-        showToast("Error", error, "error");
+        showToast("Error", error.message, "error");
         setUser(null);
       }
     };
@@ -50,21 +52,19 @@ const Post = ({ post, postedBy }) => {
 
   if (!user) return null;
 
-  const copyURL = () => {
-    const currentURL = window.location.href;
-    navigator.clipboard
-      .writeText(currentURL)
-      .then(() => {
-        toast({
-          status: "success",
-          description: "Post link copied.",
-          duration: 3000,
-          isClosable: true,
-        });
-      })
-      .catch((err) => {
-        console.error(err);
+  const copyURL = async () => {
+    try {
+      const currentURL = window.location.href;
+      await navigator.clipboard.writeText(currentURL);
+      toast({
+        status: "success",
+        description: "Post link copied.",
+        duration: 3000,
+        isClosable: true,
       });
+    } catch (error) {
+      showToast("Error", error.message, "error");
+    }
   };
 
   const handleSave = () => {
@@ -77,26 +77,28 @@ const Post = ({ post, postedBy }) => {
   };
 
   const handleDelete = async (e) => {
-    try{
-      e.preventDefault
-      if(!window.confirm("Are you sure you want to delete this post")) return
+    try {
+      e.preventDefault();
+      if (!window.confirm("Are you sure you want to delete this post")) return;
 
-      const res = await fetch(`/api/posts/${post._id}`,{
+      const res = await fetch(`/api/posts/${post._id}`, {
         method: "DELETE",
         headers: {
-          "Content-Type": "application/json"
-        }
-      })
-      const data = await res.json()
-      if(data.error){
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      if (data.error) {
         showToast("Error", data.error, "error");
-        return
+        return;
       }
       showToast("Success", "Post deleted", "success");
-    }catch (error){
-      showToast("Error", error, "error");
+      setPosts(posts.filter((p) => p._id !== post._id));
+    } catch (error) {
+      showToast("Error", error.message, "error");
+      console.log(error)
     }
-  }
+  };
 
   return (
     <Link to={`/${user.username}/post/${post._id}`}>
