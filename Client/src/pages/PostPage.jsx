@@ -3,43 +3,42 @@ import {
   Flex,
   Image,
   Text,
-  // Menu,
-  // MenuButton,
-  // MenuList,
-  // MenuItem,
-  // useToast,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  useToast,
   Box,
   Divider,
   Button,
   Spinner,
 } from "@chakra-ui/react";
-// import { BsThreeDots } from "react-icons/bs";
-// import { CiBookmark } from "react-icons/ci";
-// import { FaRegEyeSlash } from "react-icons/fa";
-// import { LiaUserSlashSolid } from "react-icons/lia";
-// import { TbMessageReport } from "react-icons/tb";
-// import { AiOutlineLink } from "react-icons/ai";
-// import { VscMute } from "react-icons/vsc";
+import { BsThreeDots } from "react-icons/bs";
+import { CiBookmark } from "react-icons/ci";
+import { AiOutlineLink } from "react-icons/ai";
+import { VscMute } from "react-icons/vsc";
 import Actions from "../components/Actions";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Comment from "../components/Comment";
 import useGetUserProfile from "../hooks/useGetUserProfile";
 import useShowToast from "../hooks/useShowToast";
 import { useNavigate, useParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { DeleteIcon } from "@chakra-ui/icons";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
+import postAtom from "../atoms/postAtom";
 
-const PostPage = ({ postImg, postTitle }) => {
+const PostPage = () => {
   const [user, loading] = useGetUserProfile();
-  // const [liked, setLiked] = useState(false);
-  const [post, setPost] = useState(null);
+  const [posts, setPosts] = useRecoilState(postAtom);
   const showToast = useShowToast();
   const { pid } = useParams();
   const currentUser = useRecoilValue(userAtom);
-  const navigate = useNavigate()
-  // const toast = useToast();
+  const navigate = useNavigate();
+  const toast = useToast();
+
+  const currentPost = posts[0];
 
   useEffect(() => {
     const getPost = async () => {
@@ -50,63 +49,61 @@ const PostPage = ({ postImg, postTitle }) => {
           showToast("Error", data.error, "error");
           return;
         }
-        console.log(data);
-        setPost(data);
+        setPosts([data]);
       } catch (error) {
         showToast("Error", error.message, "error");
       }
     };
     getPost();
-  }, [showToast, pid]);
+  }, [showToast, pid, setPosts]);
 
   const handleDeletePost = async () => {
-    try{
-      if(!window.confirm("Are you sure you want to delete this post")) return
+    try {
+      if (!window.confirm("Are you sure you want to delete this post")) return;
 
-      const res = await fetch(`/api/posts/${post._id}`,{
+      const res = await fetch(`/api/posts/${currentPost._id}`, {
         method: "DELETE",
         headers: {
-          "Content-Type": "application/json"
-        }
-      })
-      const data = await res.json()
-      if(data.error){
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      if (data.error) {
         showToast("Error", data.error, "error");
-        return
+        return;
       }
       showToast("Success", "Post deleted", "success");
-      navigate(`${user.username}`)
-    }catch (error){
+      navigate(`${user.username}`);
+    } catch (error) {
       showToast("Error", error, "error");
     }
-  }
+  };
 
+  const copyURL = () => {
+    const currentURL = window.location.href;
+    navigator.clipboard
+      .writeText(currentURL)
+      .then(() => {
+        toast({
+          status: "success",
+          description: "Post link copied.",
+          duration: 3000,
+          isClosable: true,
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
 
-  // const copyURL = () => {
-  //   const currentURL = window.location.href;
-  //   navigator.clipboard
-  //     .writeText(currentURL)
-  //     .then(() => {
-  //       toast({
-  //         status: "success",
-  //         description: "Post link copied.",
-  //         duration: 3000,
-  //         isClosable: true,
-  //       });
-  //     })
-  //     .catch((err) => {
-  //       console.error(err);
-  //     });
-  // };
-
-  // const handleSave = () => {
-  //   const link = document.createElement("a");
-  //   link.href = postImg;
-  //   link.download = postTitle || "download";
-  //   document.body.appendChild(link);
-  //   link.click();
-  //   document.body.removeChild(link);
-  // };
+  const handleSave = () => {
+    const link = document.createElement("a");
+    link.href = currentPost.img;
+    link.download = currentPost.title || "download";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   if (!user && loading) {
     return (
@@ -116,7 +113,7 @@ const PostPage = ({ postImg, postTitle }) => {
     );
   }
 
-  if (!post) return null;
+  if (!currentPost) return null;
 
   return (
     <>
@@ -137,17 +134,10 @@ const PostPage = ({ postImg, postTitle }) => {
             textAlign={"right"}
             color={"gray.light"}
           >
-            {formatDistanceToNow(new Date(post.createdAt))} ago
+            {formatDistanceToNow(new Date(currentPost.createdAt))} ago
           </Text>
-          {currentUser?._id === user._id && (
-            <DeleteIcon
-              size={20}
-              cursor={"pointer"}
-              onClick={handleDeletePost}
-            />
-          )}
         </Flex>
-        {/* <Flex gap={4} alignItems={"center"}>
+        <Flex gap={4} alignItems={"center"}>
           <Text fontSize={"sm"} color={"gray.light"}>
             Id
           </Text>
@@ -162,24 +152,33 @@ const PostPage = ({ postImg, postTitle }) => {
               justifyContent={"space-between"}
               display="flex"
               onClick={handleSave}
+              cursor="pointer"
             >
               <Text>Save</Text>
               <CiBookmark size={20} style={{ marginRight: "8px" }} />
             </MenuItem>
             <Divider />
-            <MenuItem
-              bg={"gray.dark"}
-              justifyContent={"space-between"}
-              display="flex"
-            >
-              <Text>Not interested</Text>
-              <FaRegEyeSlash size={20} style={{ marginRight: "8px" }} />
-            </MenuItem>
+            {currentUser?._id === user._id && (
+              <>
+                <Divider />
+                <MenuItem
+                  bg={"gray.dark"}
+                  justifyContent={"space-between"}
+                  display="flex"
+                  cursor="pointer"
+                  onClick={handleDeletePost}
+                >
+                  <Text>Delete</Text>
+                  <DeleteIcon size={20} cursor={"pointer"} />
+                </MenuItem>
+              </>
+            )}
             <Divider />
             <MenuItem
               bg={"gray.dark"}
               justifyContent={"space-between"}
               display="flex"
+              cursor="pointer"
             >
               <Text>Mute</Text>
               <VscMute size={20} style={{ marginRight: "8px" }} />
@@ -189,45 +188,28 @@ const PostPage = ({ postImg, postTitle }) => {
               bg={"gray.dark"}
               justifyContent={"space-between"}
               display="flex"
-            >
-              <Text>Unfollow</Text>
-              <LiaUserSlashSolid size={20} style={{ marginRight: "8px" }} />
-            </MenuItem>
-            <Divider />
-            <MenuItem
-              bg={"gray.dark"}
-              justifyContent={"space-between"}
-              display="flex"
-            >
-              <Text>Report </Text>
-              <TbMessageReport size={20} style={{ marginRight: "8px" }} />
-            </MenuItem>
-            <Divider />
-            <MenuItem
-              bg={"gray.dark"}
-              justifyContent={"space-between"}
-              display="flex"
+              cursor="pointer"
               onClick={copyURL}
             >
               <Text>Copy link</Text>
               <AiOutlineLink size={20} style={{ marginRight: "8px" }} />
             </MenuItem>
           </MenuList>
-        </Menu> */}
+        </Menu>
       </Flex>
       <Text my={3}>hello</Text>
-      {post.img && (
+      {currentPost.img && (
         <Box
           borderRadius={6}
           overflow={"hidden"}
           border={"1px solid"}
           borderColor={"gray.light"}
         >
-          <Image src={"/Images/post1.jpg"} w={"full"} />
+          <Image src={currentPost.img} w={"full"} />
         </Box>
       )}
       <Flex gap={3} my={3}>
-        <Actions post={post} />
+        <Actions post={currentPost} />
       </Flex>
 
       <Divider my={4} />
@@ -240,12 +222,15 @@ const PostPage = ({ postImg, postTitle }) => {
         <Button>Get</Button>
       </Flex>
       <Divider my={4} />
-      {post.replies.map(reply => (
-       <Comment
-       key={reply._id}
-       reply={reply}
-       lastReply = {reply._id === post.replies[post.replies.length -1]._id}
-      /> 
+      {currentPost.replies.map((reply) => (
+        <Comment
+          key={reply._id}
+          reply={reply}
+          lastReply={
+            reply._id ===
+            currentPost.replies[currentPost.replies.length - 1]._id
+          }
+        />
       ))}
     </>
   );
