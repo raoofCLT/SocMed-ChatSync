@@ -28,7 +28,7 @@ const Header = () => {
           <AiFillHome size={24} />
         </Link>
       )}
-      {!user && <Link onClick={() => setAuthScreen("login")}>Login</Link>}
+      {!user && <Link to={"/auth"} onClick={() => setAuthScreen("login")}>Login</Link>}
       <Image
         cursor={"pointer"}
         alt="logo"
@@ -51,7 +51,7 @@ const Header = () => {
           </Button>
         </Flex>
       )}
-      {!user && <Link onClick={() => setAuthScreen("signup")}>Sign up</Link>}
+      {!user && <Link to={"/auth"} onClick={() => setAuthScreen("signup")}>Sign up</Link>}
     </Flex>
   );
 };
