@@ -9,6 +9,7 @@ import { useSetRecoilState, useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 import { AiFillHome } from "react-icons/ai";
 import { PiUserCircleFill } from "react-icons/pi";
+import { BsFillChatQuoteFill } from "react-icons/bs";
 import { Link } from "react-router-dom";
 import { FiLogOut } from "react-icons/fi";
 import useLogout from "../hooks/useLogout";
@@ -45,6 +46,9 @@ const Header = () => {
         <Flex alignItems={"center"} gap={4}>
           <Link to={`/${user.username}`}>
             <PiUserCircleFill size={24} />
+          </Link>
+          <Link to={"/chat"}>
+            <BsFillChatQuoteFill size={20} />
           </Link>
           <Button bg={colorModeBg} size={"xs"} onClick={logout}>
             <FiLogOut size={20} />
