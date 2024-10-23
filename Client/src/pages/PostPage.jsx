@@ -20,7 +20,7 @@ import { VscMute } from "react-icons/vsc";
 import Actions from "../components/Actions";
 import { useEffect } from "react";
 import Comment from "../components/Comment";
-import useGetUserProfile from "../hooks/useGetUserProfile";
+import useGetUserProfile from "../hooks/useGetUserProfile.js";
 import useShowToast from "../hooks/useShowToast";
 import { useNavigate, useParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
@@ -30,7 +30,7 @@ import userAtom from "../atoms/userAtom";
 import postAtom from "../atoms/postAtom";
 
 const PostPage = () => {
-  const [user, loading] = useGetUserProfile();
+  const {user, loading} = useGetUserProfile();
   const [posts, setPosts] = useRecoilState(postAtom);
   const showToast = useShowToast();
   const { pid } = useParams();

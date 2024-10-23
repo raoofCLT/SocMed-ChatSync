@@ -26,8 +26,9 @@ const UserHeader = ({ user }) => {
   const toast = useToast();
   const currentUser = useRecoilValue(userAtom); //logged in user
   const [following, setFollowing] = useState(
-    user.followers.includes(currentUser?._id)
+    user?.followers?.includes(currentUser?._id)
   );
+  console.log(user)
   const showToast = useShowToast();
   const [updating, setUpdating] = useState(false);
   const buttonBgColor = useColorModeValue("gray.300", "gray.dark");
@@ -146,7 +147,7 @@ const UserHeader = ({ user }) => {
       )}
       <Flex w={"full"} justifyContent={"space-between"}>
         <Flex gap={2} alignItems={"center"}>
-          <Text color={"gray.light"}>{user.followers.length} followers</Text>
+          <Text color={"gray.light"}>{user?.followers?.length} followers</Text>
           <Box w={1} h={1} bg={"gray.light"} borderRadius={"full"}></Box>
           <Link color={"gray.light"}>instagram.com</Link>
         </Flex>

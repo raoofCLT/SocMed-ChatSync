@@ -33,10 +33,12 @@ const Post = ({ post, postedBy }) => {
   const currentUser = useRecoilValue(userAtom);
 
   useEffect(() => {
+    console.log("postedBy:", postedBy);
     const getUser = async () => {
       try {
         const res = await fetch("/api/users/profile/" + postedBy);
-        const data = await res.json();
+        const data = await res.json()
+        console.log(data);
         if (data.error) {
           showToast("Error", data.error, "error");
           return;
@@ -47,7 +49,11 @@ const Post = ({ post, postedBy }) => {
         setUser(null);
       }
     };
-    getUser();
+    if (postedBy) {
+      getUser();
+    } else {
+      showToast("Error", "No user specified", "error");
+    }
   }, [postedBy, showToast]);
 
   if (!user) return null;

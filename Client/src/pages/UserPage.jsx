@@ -9,33 +9,33 @@ import { useRecoilState } from "recoil";
 import postAtom from "../atoms/postAtom";
 
 const UserPage = () => {
-  const [loading,user] = useGetUserProfile()
+  const { loading, user } = useGetUserProfile();
   const { username } = useParams();
   const showToast = useShowToast();
-  const [posts, setPosts] = useRecoilState(postAtom)
-  const [fetchingPosts,setFetchingPosts] = useState(true)
-  
+  const [posts, setPosts] = useRecoilState(postAtom);
+  const [fetchingPosts, setFetchingPosts] = useState(true);
+
   useEffect(() => {
     const getPosts = async () => {
-      setFetchingPosts(true)
-      try{
-         const res = await fetch(`/api/posts/user/${username}`)
-         const data = await res.json()
-         console.log(data)
-         if(data.error){
-          return showToast("Error", data.error , "error")
-         }
-         setPosts(data)
-      }catch (error) {
-        showToast("Error", error.message , "error")
-        setPosts([])
-      }finally{
-        setFetchingPosts(false)
+      setFetchingPosts(true);
+      try {
+        const res = await fetch(`/api/posts/user/${username}`);
+        const data = await res.json();
+        console.log(data);
+        if (data.error) {
+          return showToast("Error", data.error, "error");
+        }
+        setPosts(data);
+      } catch (error) {
+        showToast("Error", error.message, "error");
+        setPosts([]);
+      } finally {
+        setFetchingPosts(false);
       }
-    }
+    };
 
-    getPosts()
-  }, [username, showToast,setPosts]);
+    getPosts();
+  }, [username, showToast, setPosts]);
 
   if (!user && loading) {
     return (
@@ -51,17 +51,17 @@ const UserPage = () => {
   return (
     <>
       <UserHeader user={user} />
-     {!fetchingPosts && posts.length === 0 && <h1> User has not posts</h1>}
+      {!fetchingPosts && posts.length === 0 && <h1> User has not posts</h1>}
 
-     {fetchingPosts && (
-      <Flex justifyContent={"Center"} my={12}>
-        <Spinner size={"xl"} />
-      </Flex>
-     )}
-    
-    {posts.map((post) => (
-      <Post key = {post._id} post={post} postedBy= {post.postedBy}/>
-    ))}
+      {fetchingPosts && (
+        <Flex justifyContent={"Center"} my={12}>
+          <Spinner size={"xl"} />
+        </Flex>
+      )}
+
+      {posts.map((post) => (
+        <Post key={post._id} post={post} postedBy={post.postedBy} />
+      ))}
     </>
   );
 };

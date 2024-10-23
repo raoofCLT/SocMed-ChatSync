@@ -14,10 +14,16 @@ const useGetUserProfile = () => {
       try {
         const res = await fetch(`/api/users/profile/${username}`);
         const data = await res.json();
+        console.log("Fetched user data:", data);
         if (data.error) {
           showToast("Error", data.error, "error");
           return;
         }
+        if (data.isFrozen) {
+					setUser(null);
+					return;
+				}
+
         setUser(data);
       } catch (error) {
         console.log(error);
@@ -28,7 +34,7 @@ const useGetUserProfile = () => {
     };
     getUser();
   }, [username, showToast]);
-  return [user,loading];
+  return {user,loading};
 };
 
 export default useGetUserProfile;
