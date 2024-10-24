@@ -77,6 +77,13 @@ async function getConversations(req,res) {
       select: "username profilePic"
     })
 
+    //remove the current user from the participants array
+    conversations.forEach(conversation => {
+      conversation.participants = conversation.participants.filter(
+        participant => participant._id.toString() !== userId.toString()
+      )
+    })
+
     res.status(200).json(conversations)
 
   }catch (error){
