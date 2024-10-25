@@ -34,7 +34,7 @@ export default function UpdateProfilePage() {
     e.preventDefault();
     if (updating) return;
     setUpdating(true);
-    console.log(user);
+    
     try {
       const res = await fetch(`/api/users/update/${user._id}`, {
         method: "PUT",
@@ -43,6 +43,7 @@ export default function UpdateProfilePage() {
         },
         body: JSON.stringify({ ...inputs, profilePic: imgUrl }),
       });
+      
       const data = await res.json();
       if (data.error) {
         showToast("Error", data.error, "error");

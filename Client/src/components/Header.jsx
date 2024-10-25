@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Button,
   Flex,
   Image,
@@ -8,7 +9,7 @@ import {
 import { useSetRecoilState, useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 import { AiFillHome } from "react-icons/ai";
-import { PiUserCircleFill } from "react-icons/pi";
+// import { PiUserCircleFill } from "react-icons/pi";
 import { BsFillChatQuoteFill } from "react-icons/bs";
 import { Link } from "react-router-dom";
 import { FiLogOut } from "react-icons/fi";
@@ -29,7 +30,11 @@ const Header = () => {
           <AiFillHome size={24} />
         </Link>
       )}
-      {!user && <Link to={"/auth"} onClick={() => setAuthScreen("login")}>Login</Link>}
+      {!user && (
+        <Link to={"/auth"} onClick={() => setAuthScreen("login")}>
+          Login
+        </Link>
+      )}
       <Image
         cursor={"pointer"}
         alt="logo"
@@ -45,7 +50,11 @@ const Header = () => {
       {user && (
         <Flex alignItems={"center"} gap={4}>
           <Link to={`/${user.username}`}>
-            <PiUserCircleFill size={24} />
+            <Avatar
+              size={"xs"} // Adjust the size as needed
+              src={user.profilePic || "https://bit.ly/broken-link"} // Fallback if no profile picture
+              alt={user.username} // Alt text for accessibility
+            />
           </Link>
           <Link to={"/chat"}>
             <BsFillChatQuoteFill size={20} />
@@ -55,7 +64,11 @@ const Header = () => {
           </Button>
         </Flex>
       )}
-      {!user && <Link to={"/auth"} onClick={() => setAuthScreen("signup")}>Sign up</Link>}
+      {!user && (
+        <Link to={"/auth"} onClick={() => setAuthScreen("signup")}>
+          Sign up
+        </Link>
+      )}
     </Flex>
   );
 };
