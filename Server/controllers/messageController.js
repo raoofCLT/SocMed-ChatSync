@@ -1,6 +1,6 @@
 import Conversation from "../models/conversationModel.js";
 import Message from "../models/messageModel.js";
-
+import { getRecipientSocketId, io } from "../socket/socket.js";
 
 //Send Message | Post Message
 async function sendMessage(req, res) {
@@ -38,56 +38,60 @@ async function sendMessage(req, res) {
       }),
     ]);
 
+    const recipientSockedId = getRecipientSocketId(recipientId);
+    if (recipientSockedId) {
+      io.to(recipientSockedId).emit("newMessage", newMessage);
+    }
+
     res.status(201).json(newMessage);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
 
-
 //Get Messages
-async function getMessages(req,res) {
-  const {otherUserId} = req.params
-  const userId = req.user._id
-  try{
+async function getMessages(req, res) {
+  const { otherUserId } = req.params;
+  const userId = req.user._id;
+  try {
     const conversation = await Conversation.findOne({
-      participants: {$all: [userId, otherUserId]}
-    })
+      participants: { $all: [userId, otherUserId] },
+    });
 
-    if(!conversation) {
-      return res.status(404).json({error: "Conversation not found"})
+    if (!conversation) {
+      return res.status(404).json({ error: "Conversation not found" });
     }
     const messages = await Message.find({
-      conversationId: conversation._id
-    }).sort({createdAt: 1})
+      conversationId: conversation._id,
+    }).sort({ createdAt: 1 });
 
-    res.status(200).json(messages)
-
-  }catch (error){
-    res.status(500).json({error: error.message})
+    res.status(200).json(messages);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 }
 
 //Get Conversations
-async function getConversations(req,res) {
-  const userId = req.user._id
-  try{
-    const conversations = await Conversation.find({participants: userId}).populate({
+async function getConversations(req, res) {
+  const userId = req.user._id;
+  try {
+    const conversations = await Conversation.find({
+      participants: userId,
+    }).populate({
       path: "participants",
-      select: "username profilePic"
-    })
+      select: "username profilePic",
+    });
 
     //remove the current user from the participants array
-    conversations.forEach(conversation => {
+    conversations.forEach((conversation) => {
       conversation.participants = conversation.participants.filter(
-        participant => participant._id.toString() !== userId.toString()
-      )
-    })
+        (participant) => participant._id.toString() !== userId.toString()
+      );
+    });
 
-    res.status(200).json(conversations)
-
-  }catch (error){
-    res.status(500).json({error: error.message})
+    res.status(200).json(conversations);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 }
 
