@@ -8,11 +8,14 @@ const messageSchema = new mongoose.Schema(
     },
     sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     text: String,
+    seen: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
+const Message = mongoose.model("Message", messageSchema);
 
-const Message =  mongoose.model("Message", messageSchema);
-
-export default Message
+export default Message;

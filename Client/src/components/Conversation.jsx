@@ -1,6 +1,7 @@
 import {
   Avatar,
   AvatarBadge,
+  Box,
   Flex,
   Image,
   Stack,
@@ -23,7 +24,6 @@ const Conversation = ({ conversation, isOnline }) => {
   );
   const colorMode = useColorMode();
 
-  console.log(selectedConversation);
   return (
     <Flex
       gap={4}
@@ -71,7 +71,9 @@ const Conversation = ({ conversation, isOnline }) => {
         </Text>
         <Text fontSize={"xs"} display={"flex"} alignItems={"center"} gap={1}>
           {currentUser._id === lastMessage.sender ? (
-            <BsCheck2All size={16} />
+            <Box color={lastMessage.seen ? "blue.400" : ""}>
+              <BsCheck2All size={16} />
+            </Box>
           ) : (
             ""
           )}
