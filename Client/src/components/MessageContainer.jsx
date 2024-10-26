@@ -16,34 +16,36 @@ import { selectedConversationAtom } from "../atoms/messagesAtom";
 import userAtom from "../atoms/userAtom";
 
 const MessageContainer = () => {
-  const showToast = useShowToast()
-  const [selectedConversation, setSelectedConversation] = useRecoilState(selectedConversationAtom)
-  const [loadingMessages, setLoadingMessages] = useState(true)
-  const [messages, setMessages] = useState([])
-  const currentUser = useRecoilValue(userAtom)
+  const showToast = useShowToast();
+  const [selectedConversation, setSelectedConversation] = useRecoilState(
+    selectedConversationAtom
+  );
+  const [loadingMessages, setLoadingMessages] = useState(true);
+  const [messages, setMessages] = useState([]);
+  const currentUser = useRecoilValue(userAtom);
 
-
-  useEffect(()=> {
+  useEffect(() => {
     const getMessages = async () => {
-      setLoadingMessages(true)
-      setMessages([])
-      try{
-        const res = await fetch(`/api/messages/${selectedConversation.userId}`)
-      const data = await res.json()
-      if(data.error){
-        showToast("Error", data.error, "error")
-        return
+      setLoadingMessages(true);
+      setMessages([]);
+      try {
+        if (selectedConversation.mock) return;
+        const res = await fetch(`/api/messages/${selectedConversation.userId}`);
+        const data = await res.json();
+        if (data.error) {
+          showToast("Error", data.error, "error");
+          return;
+        }
+        setMessages(data);
+      } catch (error) {
+        showToast("Error", error.message, "error");
+      } finally {
+        setLoadingMessages(false);
       }
-      setMessages(data)
-      }catch (error){
-        showToast("Error",error.message,"error")
-      }finally{
-        setLoadingMessages(false)
-      }
-    }
-    getMessages()
-  },[showToast, selectedConversation])
-  
+    };
+    getMessages();
+  }, [showToast, selectedConversation]);
+
   return (
     <Flex
       flex="70"
@@ -56,7 +58,8 @@ const MessageContainer = () => {
       <Flex w={"full"} h={12} alignItems={"center"} gap={2}>
         <Avatar src={selectedConversation.userProfilePic} size={"sm"} />
         <Text display={"flex"} alignItems={"center"}>
-          {selectedConversation.username} <Image src="/verified.png" w={4} h={4} ml={1} />
+          {selectedConversation.username}{" "}
+          <Image src="/verified.png" w={4} h={4} ml={1} />
         </Text>
       </Flex>
       <Divider />
@@ -89,13 +92,16 @@ const MessageContainer = () => {
             </Flex>
           ))}
 
-          {!loadingMessages && (
-            messages.map(message => (
-              <Message key={message.id} message={message} ownMessage={currentUser._id === message.sender}/>
-            ))
-          )}
+        {!loadingMessages &&
+          messages.map((message) => (
+            <Message
+              key={message.id}
+              message={message}
+              ownMessage={currentUser._id === message.sender}
+            />
+          ))}
       </Flex>
-      <MessageInput setMessages={setMessages}/>
+      <MessageInput setMessages={setMessages} />
     </Flex>
   );
 };

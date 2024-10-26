@@ -9,7 +9,7 @@ const MessageInput = ({ setMessages }) => {
   const [messageText, setMessageText] = useState("");
   const showToast = useShowToast();
   const selectedConversation = useRecoilValue(selectedConversationAtom);
-  const setConversation = useRecoilState(conversationsAtom);
+  const [conversations, setConversations] = useRecoilState(conversationsAtom);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -32,7 +32,7 @@ const MessageInput = ({ setMessages }) => {
       }
       setMessages((messages) => [...messages, data]);
       
-      setConversation(prevConversation => {
+      setConversations(prevConversation => {
         const updatedConversations = prevConversation.map(conversation => {
           if(conversation._id === selectedConversation._id){
           return{
