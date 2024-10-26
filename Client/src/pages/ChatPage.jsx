@@ -19,6 +19,7 @@ import {
   selectedConversationAtom,
 } from "../atoms/messagesAtom";
 import userAtom from "../atoms/userAtom";
+import { useSocket } from "../context/SocketContext";
 
 const ChatPage = () => {
   const [searchingUser, setSearchingUser] = useState(false);
@@ -30,6 +31,7 @@ const ChatPage = () => {
   );
   const currentUser = useRecoilValue(userAtom);
   const showToast = useShowToast();
+  const { socket, onlineUsers } = useSocket();
 
   useEffect(() => {
     const getConversations = async () => {
@@ -62,7 +64,7 @@ const ChatPage = () => {
         showToast("Error", searchedUser.error, "error");
         return;
       }
-      
+
       const preventSearchSelf = searchedUser._id === currentUser._id;
       if (preventSearchSelf) {
         showToast("Error", "You cannot message yourself", "error");
@@ -83,22 +85,21 @@ const ChatPage = () => {
       }
 
       const mockConversation = {
-        mock:true,
+        mock: true,
         lastMessage: {
           text: "",
-          sender: ""
+          sender: "",
         },
         _id: Date.now(),
         participants: [
           {
             _id: searchedUser._id,
             username: searchedUser.username,
-            profilePic: searchedUser.profilePic
-          }
-        ]
-      }
-      setConversations((prevConv) => [...prevConv, mockConversation])
-
+            profilePic: searchedUser.profilePic,
+          },
+        ],
+      };
+      setConversations((prevConv) => [...prevConv, mockConversation]);
     } catch (error) {
       showToast("Error", error.message, "error");
     } finally {
@@ -185,6 +186,7 @@ const ChatPage = () => {
             conversations.map((conversation) => (
               <Conversation
                 key={conversation._id}
+                isOnline={onlineUsers.includes(conversation.participants[0]._id)}
                 conversation={conversation}
               />
             ))}
