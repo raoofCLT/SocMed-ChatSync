@@ -11,6 +11,7 @@ import userAtom from "../atoms/userAtom";
 import { AiFillHome } from "react-icons/ai";
 // import { PiUserCircleFill } from "react-icons/pi";
 import { BsFillChatQuoteFill } from "react-icons/bs";
+import { MdOutlineSettings } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { FiLogOut } from "react-icons/fi";
 import useLogout from "../hooks/useLogout";
@@ -56,9 +57,15 @@ const Header = () => {
               alt={user.username} // Alt text for accessibility
             />
           </Link>
+
           <Link to={"/chat"}>
             <BsFillChatQuoteFill size={20} />
           </Link>
+
+          <Link to={"/settings"}>
+            <MdOutlineSettings size={20} />
+          </Link>
+
           <Button bg={colorModeBg} size={"xs"} onClick={logout}>
             <FiLogOut size={20} />
           </Button>
