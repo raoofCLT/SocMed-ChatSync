@@ -19,18 +19,12 @@ import { CgMoreO } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 import { Link as RouterLink } from "react-router-dom";
-import { useState } from "react";
-import useShowToast from "../hooks/useShowToast";
+import useFollowUnfollow from "../hooks/useFollowUnfollow";
 
 const UserHeader = ({ user }) => {
   const toast = useToast();
   const currentUser = useRecoilValue(userAtom); //logged in user
-  const [following, setFollowing] = useState(
-    user?.followers?.includes(currentUser?._id)
-  );
-  console.log(user)
-  const showToast = useShowToast();
-  const [updating, setUpdating] = useState(false);
+  const { handleFollow, following, updating } = useFollowUnfollow(user);
   const buttonBgColor = useColorModeValue("gray.300", "gray.dark");
 
   const copyURL = () => {
@@ -48,43 +42,6 @@ const UserHeader = ({ user }) => {
       .catch((err) => {
         console.error(err);
       });
-  };
-
-  const handleFollow = async () => {
-    if (!currentUser) {
-      showToast("Error", "Please login to follow", "error");
-      return;
-    }
-    if (updating) return;
-    setUpdating(true);
-    try {
-      const res = await fetch(`/api/users/follow/${user._id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await res.json();
-      if (data.error) {
-        showToast("Error", data.error, "error");
-        return;
-      }
-
-      if (following) {
-        showToast("Success", `Unfollowed ${user.name}`, "success");
-        user.followers.pop();
-      } else {
-        showToast("Success", `Followed ${user.name}`, "success");
-        user.followers.push(currentUser?._id);
-      }
-
-      setFollowing(!following);
-    } catch (error) {
-      console.log(error);
-      showToast("Error", error, "error");
-    } finally {
-      setUpdating(false);
-    }
   };
 
   return (
