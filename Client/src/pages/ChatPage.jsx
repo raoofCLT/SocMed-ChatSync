@@ -34,7 +34,7 @@ const ChatPage = () => {
   const { socket, onlineUsers } = useSocket();
 
 useEffect(()=> {
-  socket?.on("messageSeen",({conversationId})=> {
+  socket?.on("messagesSeen",({conversationId})=> {
     setConversations((prev) => {
       const updatedConversations = prev.map((conversation) => {
         if(conversation._id === conversationId){
@@ -51,6 +51,10 @@ useEffect(()=> {
       return updatedConversations
     })
   })
+  return () => {
+    // Clean up the listener when component unmounts
+    socket?.off("messagesSeen");
+  };
 },[socket,setConversations])
 
   useEffect(() => {
