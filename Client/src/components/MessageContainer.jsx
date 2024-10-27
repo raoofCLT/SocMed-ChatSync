@@ -17,7 +17,8 @@ import {
   selectedConversationAtom,
 } from "../atoms/messagesAtom";
 import userAtom from "../atoms/userAtom";
-import { useSocket } from "../context/SocketContext";
+import { useSocket } from "../context/SocketContext.jsx";
+import messageSound from "../assets/sounds/messageSound.mp3";
 
 const MessageContainer = () => {
   const showToast = useShowToast();
@@ -31,91 +32,91 @@ const MessageContainer = () => {
   const { socket } = useSocket();
   const messageEndRef = useRef(null);
 
-  useEffect(() => {
-    socket.on("newMessage", (message) => {
-      if (selectedConversation._id === message.conversationId) {
-        setMessages((prev) => [...prev, message]);
+	useEffect(() => {
+		socket.on("newMessage", (message) => {
+			if (selectedConversation._id === message.conversationId) {
+				setMessages((prev) => [...prev, message]);
+			}
+
+      if(!document.hasFocus()){
+        const sound = new Audio(messageSound);
+        sound.play();
       }
 
-      setConversations((prev) => {
-        const updatedConversations = prev.map((conversation) => {
-          if (conversation._id === message.conversationId) {
-            return {
-              ...conversation,
-              lastMessage: {
-                text: message.text,
-                sender: message.sender,
-              },
-            };
-          }
-          return conversation;
-        });
-        return updatedConversations;
-      });
-    });
 
-    return () => socket.off("newMessage");
-  }, [socket, selectedConversation, setConversations]);
+			setConversations((prev) => {
+				const updatedConversations = prev.map((conversation) => {
+					if (conversation._id === message.conversationId) {
+						return {
+							...conversation,
+							lastMessage: {
+								text: message.text,
+								sender: message.sender,
+							},
+						};
+					}
+					return conversation;
+				});
+				return updatedConversations;
+			});
+		});
 
-  useEffect(() => {
-    const lastMessageIsFromOtherUser =
-      messages.length &&
-      messages[messages.length - 1].sender !== currentUser._id;
-    if (lastMessageIsFromOtherUser) {
-      socket.emit("markMessagesAsSeen", {
-        conversationId: selectedConversation._id,
-        userId: selectedConversation.userId,
-      });
-    }
+		return () => socket.off("newMessage");
+	}, [socket, selectedConversation, setConversations]);
 
-    socket.on("messagesSeen", ({ conversationId }) => {
-      if (selectedConversation._id === conversationId) {
-        setMessages((prev) => {
-          const updatedMessages = prev.map((message) => {
-            if (!message.seen) {
-              return {
-                ...message,
-                seen: true,
-              };
-            }
-            return message;
-          });
-          return updatedMessages;
-        });
-      }
-    });
-  }, [
-    currentUser._id,
-    messages,
-    selectedConversation,
-    socket,
-  ]);
+	useEffect(() => {
+		const lastMessageIsFromOtherUser = messages.length && messages[messages.length - 1].sender !== currentUser._id;
+		if (lastMessageIsFromOtherUser) {
+			socket.emit("markMessagesAsSeen", {
+				conversationId: selectedConversation._id,
+				userId: selectedConversation.userId,
+			});
+		}
+
+		socket.on("messagesSeen", ({ conversationId }) => {
+			if (selectedConversation._id === conversationId) {
+				setMessages((prev) => {
+					const updatedMessages = prev.map((message) => {
+						if (!message.seen) {
+							return {
+								...message,
+								seen: true,
+							};
+						}
+						return message;
+					});
+					return updatedMessages;
+				});
+			}
+		});
+	}, [socket, currentUser._id, messages, selectedConversation]);
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  useEffect(() => {
-    const getMessages = async () => {
-      setLoadingMessages(true);
-      setMessages([]);
-      try {
-        if (selectedConversation.mock) return;
-        const res = await fetch(`/api/messages/${selectedConversation.userId}`);
-        const data = await res.json();
-        if (data.error) {
-          showToast("Error", data.error, "error");
-          return;
-        }
-        setMessages(data);
-      } catch (error) {
-        showToast("Error", error.message, "error");
-      } finally {
-        setLoadingMessages(false);
-      }
-    };
+	useEffect(() => {
+		const getMessages = async () => {
+			setLoadingMessages(true);
+			setMessages([]);
+			try {
+				if (selectedConversation.mock) return;
+				const res = await fetch(`/api/messages/${selectedConversation.userId}`);
+				const data = await res.json();
+				if (data.error) {
+					showToast("Error", data.error, "error");
+					return;
+				}
+				setMessages(data);
+			} catch (error) {
+				showToast("Error", error.message, "error");
+			} finally {
+				setLoadingMessages(false);
+			}
+		};
+
     getMessages();
-  }, [showToast, selectedConversation]);
+	}, [showToast, selectedConversation.userId, selectedConversation.mock]);
 
   return (
     <Flex
@@ -135,14 +136,7 @@ const MessageContainer = () => {
       </Flex>
       <Divider />
 
-      <Flex
-        flexDirection={"column"}
-        gap={4}
-        my={4}
-        p={2}
-        h={"400px"}
-        overflowY={"auto"}
-      >
+      <Flex flexDirection={"column"} gap={4} my={4} p={2} h={"400px"} overflowY={"auto"} >
         {loadingMessages &&
           [...Array(5)].map((_, i) => (
             <Flex
@@ -158,15 +152,15 @@ const MessageContainer = () => {
                 <SkeletonCircle h={"8px"} w={"250px"} />
                 <SkeletonCircle h={"8px"} w={"250px"} />
                 <SkeletonCircle h={"8px"} w={"250px"} />
-                {i % 2 !== 0 && <SkeletonCircle size={7} />}
               </Flex>
+              {i % 2 !== 0 && <SkeletonCircle size={7} />}
             </Flex>
           ))}
 
         {!loadingMessages &&
           messages.map((message) => (
             <Flex
-              key={message.id}
+              key={message._id} // Use `message._id` if available, else fallback to `index` temporarily.
               direction={"column"}
               ref={
                 messages.length - 1 === messages.indexOf(message)

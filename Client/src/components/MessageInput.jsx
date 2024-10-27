@@ -56,11 +56,12 @@ const MessageInput = ({ setMessages }) => {
       const data = await res.json();
       if (data.error) {
         showToast("Error", data.error, "error");
+        return
       }
       setMessages((messages) => [...messages, data]);
 
-      setConversations((prevConversation) => {
-        const updatedConversations = prevConversation.map((conversation) => {
+      setConversations((prevConv) => {
+        const updatedConversations = prevConv.map((conversation) => {
           if (conversation._id === selectedConversation._id) {
             return {
               ...conversation,

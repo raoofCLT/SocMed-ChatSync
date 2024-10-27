@@ -17,6 +17,7 @@ const io = new Server(server, {
 export const getRecipientSocketId = (recipientId) =>{
     return userSocketMap[recipientId]
 }
+
 const userSocketMap = {};
 
 io.on(`connection`, (socket) => {
@@ -32,7 +33,7 @@ io.on(`connection`, (socket) => {
       await Conversation.updateOne({_id:conversationId},{$set:{"lastMessage.seen":true}})
       io.to(userSocketMap[userId]).emit("messagesSeen",{conversationId})
     }catch(error){
-      console.log(error)
+      console.error("Error marking messages as seen:", error);
     }
   })
 

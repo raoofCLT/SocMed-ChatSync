@@ -51,10 +51,8 @@ useEffect(()=> {
       return updatedConversations
     })
   })
-  return () => {
     // Clean up the listener when component unmounts
-    socket?.off("messagesSeen");
-  };
+    // socket?.off("messagesSeen");
 },[socket,setConversations])
 
   useEffect(() => {
